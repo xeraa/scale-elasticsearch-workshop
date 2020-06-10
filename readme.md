@@ -6,7 +6,7 @@ Hands-on workshop on how to scale Elasticsearch.
 
 ## Workshop
 
-We are running through this together and dive into the relevant parts.
+We are running through this together and dive into the relevant parts. For the lab, head to *My Lab* in Strigo:
 
 1. Look at the configuration files in */opt/elasticsearch-xxx/config/elasticsearch.yml*.
 1. Start all three Elasticsearch nodes with `/opt/elasticsearch-xxx/bin/elasticsearch -d`.
@@ -21,7 +21,9 @@ We are running through this together and dive into the relevant parts.
     ```
 
 1. Start Kibana with `sudo service kibana start`.
-1. Copy the DNS entry of your node and access Kibana on port 5601. The credentials are *admin* and *secret*.
+1. Copy the DNS name of your node under *Machine info*.
+    ![](machine-info.png)
+1. Access Kibana on port 5601 of your DNS name. The credentials are *admin* and *secret*.
 1. Run the following requests in Kibana's *Console* under *Dev Tools*:
 
     ```js
