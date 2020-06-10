@@ -96,7 +96,7 @@
       apt:
         deb: "{{ elastic_download }}/downloads/kibana/kibana-{{ stack_version }}-amd64.deb"
     - name: Stop Kibana
-      service: name=kibana state=stopped enabled=yes
+      service: name=kibana state=stopped
     - name: Make Kibana available on all network interfaces
       lineinfile:
         dest: /etc/kibana/kibana.yml
@@ -153,8 +153,8 @@
         - metricbeat
         - packetbeat
 
-    - name: Stop but make sure the Beats autostart
-      service: name={{ item }} state=stopped enabled=yes
+    - name: Stop the Beats
+      service: name={{ item }} state=stopped
       loop:
         - auditbeat
         - filebeat
