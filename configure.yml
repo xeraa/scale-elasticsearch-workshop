@@ -50,6 +50,11 @@
         - warm
         - cold
 
+    - name: Remove the downloaded Elasticsearch folder to avoid confusion
+      file:
+        path: "/opt/elasticsearch-{{ stack_version }}/"
+        state: absent
+
     - name: Change the Elasticsearch configuration
       template: "src=templates/elasticsearch.yml dest=/opt/elasticsearch-{{ item.size }}/config/elasticsearch.yml"
       loop:
