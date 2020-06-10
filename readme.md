@@ -127,7 +127,60 @@ We are running through this together and dive into the relevant parts. For the l
 
 1. Start Metricbeat with `sudo service metricbeat start`.
 1. Check that we are generating some metrics in *Management* → *Index Management*. Make sure there is an index called `metricbeat-000000` that has some documents.
-1. While we wait for some data to be generated, let's set up something else in Kibana's *Console*:
+1. Frozen index demo:
+
+    ```js
+    PUT frozen
+    {
+      "settings": {
+        "index.routing.allocation.include.size": "cold",
+        "index.number_of_replicas" : 0
+      }
+    }
+
+    POST frozen/_doc
+    {
+      "name": "Philipp"
+    }
+    POST frozen/_doc
+    {
+      "name": "Alex"
+    }
+
+    GET frozen/_search
+
+    POST frozen/_forcemerge?max_num_segments=1
+
+    POST frozen/_freeze
+
+    GET frozen/_search
+
+    GET frozen/_search?ignore_throttled=false
+
+    GET _cat/indices/frozen?v&h=health,status,index,pri,rep,docs.count,store.size
+
+    GET _cat/thread_pool/search_throttled?v&h=node_name,name,active,rejected,queue,completed&s=    node_name
+
+    GET frozen/_search?ignore_throttled=false&pre_filter_shard_size=1
+
+    POST frozen/_doc
+    {
+      "name": "David"
+    }
+
+    GET frozen/_settings?flat_settings=true
+
+    POST frozen/_unfreeze
+
+    POST frozen/_doc
+    {
+      "name": "David"
+    }
+
+    GET frozen/_search
+    ```
+
+1. Set up rollups in Kibana's *Console*:
 
     ```sh
     PUT _template/rollup
