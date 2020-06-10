@@ -28,9 +28,9 @@
     - name: Install auditd, which this example is about
       apt: name=auditd force_apt_get=yes
 
-    - name: Install NTP to avoid time drift and PIP to manage Python dependencies plus its build tools
+    - name: Install some developer tools
       apt:
-        name: [ 'ntp', 'ntpdate', 'python3-pip', 'build-essential', 'libssl-dev', 'libffi-dev', 'whois' ]
+        name: [ 'ntp', 'ntpdate', 'python3-pip', 'build-essential', 'libssl-dev', 'libffi-dev', 'whois', 'openjdk-11-jre-headless' ]
         force_apt_get: yes
 
 

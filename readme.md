@@ -182,7 +182,7 @@ We are running through this together and dive into the relevant parts. For the l
 
     ![](img/interval.png)
 
-1. What is the default behavior of Beats in terms of node assignment and ILM? Start Filebeat with `sudo service filebeat start`. If you don't want to wait for it to generate enough data, help with `/opt/elasticsearch-hot/jdk/bin/java -jar /opt/injector-7.0.jar --nb 1000000 --es.user admin --es.pass secret --es.index filebeat-7.7.1-2020.06.10-000001` (or whatever the current Filebeat index is). Also what about rollups?
+1. What is the default behavior of Beats in terms of node assignment and ILM? Start Filebeat with `sudo service filebeat start`. If you don't want to wait for it to generate enough data, help with `java -jar /opt/injector-7.0.jar --nb 1000000 --es.user admin --es.pass secret --es.index filebeat-7.7.1-2020.06.10-000001` (or whatever the current Filebeat index is). Also what about rollups?
 
 
 ## Terraform Setup
