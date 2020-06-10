@@ -159,9 +159,7 @@ We are running through this together and dive into the relevant parts. For the l
 
     GET _cat/indices/frozen?v&h=health,status,index,pri,rep,docs.count,store.size
 
-    GET _cat/thread_pool/search_throttled?v&h=node_name,name,active,rejected,queue,completed&s=    node_name
-
-    GET frozen/_search?ignore_throttled=false&pre_filter_shard_size=1
+    GET _cat/thread_pool/search_throttled?v&h=node_name,name,active,rejected,queue,completed&s=node_name
 
     POST frozen/_doc
     {
