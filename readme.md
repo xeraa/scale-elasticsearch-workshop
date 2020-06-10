@@ -24,7 +24,7 @@ We are running through this together and dive into the relevant parts. For the l
 1. Copy the DNS name of your node under *Machine info*.
     ![](machine-info.png)
 1. Access Kibana on port 5601 of your DNS name. The credentials are *admin* and *secret*.
-1. Run the following requests in Kibana's *Console* under *Dev Tools*:
+1. Run the following requests in Kibana's *Dev Tools* → *Console*:
 
     ```js
     PUT _cluster/settings
@@ -124,7 +124,7 @@ We are running through this together and dive into the relevant parts. For the l
     ````
 
 1. Start Metricbeat with `sudo service metricbeat start`.
-1. Check that we are generating some metrics on *Index Management* in *Management*. Make sure there is an index called `metricbeat-000000` that has some documents.
+1. Check that we are generating some metrics in *Management* → *Index Management*. Make sure there is an index called `metricbeat-000000` that has some documents.
 1. While we wait for some data to be generated, let's set up something else in Kibana's *Console*:
 
     ```sh
@@ -173,10 +173,10 @@ We are running through this together and dive into the relevant parts. For the l
     POST _rollup/job/metricbeat/_start
     ```
 
-1. Dive into the UI and our configuration for both *Index Lifecycle Policies* and *Rollup Jobs* in *Management*.
+1. Dive into the UI and our configuration for both *Management* → *Index Lifecycle Policies* and *Rollup Jobs*.
 1. Watch the transformation of indices in *Index Management*.
-1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashboard. Enable `Search in frozen indices` under *Advanced Settings* in *Management*. Refresh the dashboard and see the extended timeframe of available data.
-1. Create a new *Rollup index pattern* (on the blue *Create index pattern* button) in *Index Patterns* on *Management*. Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize*, *Create new visualization*, and then pick *Lens*. Select `Last 1 hour` again and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timeframe, but also the required disk space on *Index Management*.
+1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashboard. Enable `Search in frozen indices` under *Management* → *Advanced Settings*. Refresh the dashboard and see the extended timeframe of available data.
+1. Create a new index pattern in *Management* → *Index Patterns* → *Rollup index pattern* (on the blue *Create index pattern* button). Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize* → *Create new visualization* and then pick *Lens*. Select `Last 1 hour` again and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timeframe, but also the required disk space on *Index Management*.
 1. What is the default behavior of Beats in terms of node assignment and ILM? Start Filebeat with `sudo service filebeat start`. If you don't want to wait for it to generate enough data, help with `/opt/elasticsearch-hot/jdk/bin/java -jar /opt/injector-7.0.jar --nb 1000000 --es.user admin --es.pass secret --es.index filebeat-7.7.1-20206.10-000001` (or whatever the current Filebeat index is). Also what about rollups?
 
 
