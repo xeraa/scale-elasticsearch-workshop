@@ -173,8 +173,9 @@ We are running through this together and dive into the relevant parts.
 
 1. Dive into the UI and our configuration for both *Index Lifecycle Policies* and *Rollup Jobs* in *Management*.
 1. Watch the transformation of indices in *Index Management*.
-1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashbaord. Enable `Search in frozen indices` under *Advanced Settings* in *Management*. Refresh the dashboard and see the extended timeframe of available data.
+1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashboard. Enable `Search in frozen indices` under *Advanced Settings* in *Management*. Refresh the dashboard and see the extended timeframe of available data.
 1. Create a new *Rollup index pattern* (on the blue *Create index pattern* button) in *Index Patterns* on *Management*. Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize*, *Create new visualization*, and then pick *Lens*. Select `Last 1 hour` again and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timeframe, but also the required disk space on *Index Management*.
+1. What is the default behavior of Beats in terms of node assignment and ILM? Start Filebeat with `sudo service filebeat start`. If you don't want to wait for it to generate enough data, help with `/opt/elasticsearch-hot/jdk/bin/java -jar /opt/injector-7.0.jar --nb 1000000 --es.user admin --es.pass secret --es.index filebeat-7.7.1-20206.10-000001` (or whatever the current Filebeat index is). Also what about rollups?
 
 
 ## Terraform Setup
