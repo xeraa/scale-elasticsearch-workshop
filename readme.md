@@ -13,168 +13,168 @@ We are running through this together and dive into the relevant parts.
 1. Check that the hot node has successfully started with `curl -u admin:secret http://localhost:9200/`.
 1. Check the cluster state with `curl -u admin:secret localhost:9200/_cat/nodes?v`. It has to show the same three `name` attributes — otherwise please ping us for help:
 
-```
-ip        heap.percent ram.percent cpu load_1m load_5m load_15m node.role master name
-127.0.0.1           41          89   6    1.45    0.97     0.64 dilmrt    -      es-hot
-127.0.0.1           67          89   6    1.45    0.97     0.64 dilmrt    *      es-warm
-127.0.0.1           33          89   6    1.45    0.97     0.64 dilmrt    -      es-cold
-```
+    ```
+    ip        heap.percent ram.percent cpu load_1m load_5m load_15m node.role master name
+    127.0.0.1           41          89   6    1.45    0.97     0.64 dilmrt    -      es-hot
+    127.0.0.1           67          89   6    1.45    0.97     0.64 dilmrt    *      es-warm
+    127.0.0.1           33          89   6    1.45    0.97     0.64 dilmrt    -      es-cold
+    ```
 
 1. Start Kibana with `sudo service kibana start`.
 1. Copy the DNS entry of your node and access Kibana on port 5601. The credentials are *admin* and *secret*.
 1. Run the following requests in Kibana's *Console* under *Dev Tools*:
 
-```js
-PUT _cluster/settings
-{
-  "persistent": {
-    "indices.lifecycle.poll_interval": "5s"
-  }
-}
+    ```js
+    PUT _cluster/settings
+    {
+      "persistent": {
+        "indices.lifecycle.poll_interval": "5s"
+      }
+    }
 
 
-PUT _ilm/policy/metricbeat
-{
-  "policy" : {
-    "phases" : {
-      "hot" : {
-        "actions" : {
-          "rollover" : {
-            "max_size" : "5mb",
-            "max_age":"5m"
-          },
-          "set_priority": {
-            "priority": 50
-          }
-        }
-      },
-      "warm" : {
-        "min_age" : "5m",
-        "actions" : {
-          "readonly" : { },
-          "allocate" : {
-            "number_of_replicas" : 0,
-            "include" : {
-              "size" : "warm"
+    PUT _ilm/policy/metricbeat
+    {
+      "policy" : {
+        "phases" : {
+          "hot" : {
+            "actions" : {
+              "rollover" : {
+                "max_size" : "5mb",
+                "max_age":"5m"
+              },
+              "set_priority": {
+                "priority": 50
+              }
             }
           },
-          "forcemerge": {
-            "max_num_segments": 1
-          },
-          "shrink": {
-            "number_of_shards": 1
-          },
-          "set_priority": {
-            "priority": 25
-          }
-        }
-      },
-      "cold" : {
-        "min_age" : "10m",
-        "actions" : {
-          "allocate" : {
-            "number_of_replicas" : 0,
-            "include" : {
-              "size" : "cold"
+          "warm" : {
+            "min_age" : "5m",
+            "actions" : {
+              "readonly" : { },
+              "allocate" : {
+                "number_of_replicas" : 0,
+                "include" : {
+                  "size" : "warm"
+                }
+              },
+              "forcemerge": {
+                "max_num_segments": 1
+              },
+              "shrink": {
+                "number_of_shards": 1
+              },
+              "set_priority": {
+                "priority": 25
+              }
             }
           },
-          "freeze" : { },
-          "set_priority": {
-            "priority": 0
+          "cold" : {
+            "min_age" : "10m",
+            "actions" : {
+              "allocate" : {
+                "number_of_replicas" : 0,
+                "include" : {
+                  "size" : "cold"
+                }
+              },
+              "freeze" : { },
+              "set_priority": {
+                "priority": 0
+              }
+            }
+          },
+          "delete" : {
+            "min_age" : "20m",
+            "actions" : {
+              "delete" : { }
+            }
           }
-        }
-      },
-      "delete" : {
-        "min_age" : "20m",
-        "actions" : {
-          "delete" : { }
         }
       }
     }
-  }
-}
 
 
-PUT _template/metricbeat-custom
-{
-  "order": 10,
-  "index_patterns": ["metricbeat-*"],
-  "settings": {
-  	"index": {
-      "number_of_shards" : 2,
-      "number_of_replicas" : 0,
-      "routing.allocation.include.size": "hot",
-      "lifecycle.name": "metricbeat",
-      "lifecycle.rollover_alias": "metricbeat"
+    PUT _template/metricbeat-custom
+    {
+      "order": 10,
+      "index_patterns": ["metricbeat-*"],
+      "settings": {
+      	"index": {
+          "number_of_shards" : 2,
+          "number_of_replicas" : 0,
+          "routing.allocation.include.size": "hot",
+          "lifecycle.name": "metricbeat",
+          "lifecycle.rollover_alias": "metricbeat"
+        }
+      }
     }
-  }
-}
 
 
-PUT /metricbeat-000000
-{
-  "aliases": {
-    "metricbeat":{
-      "is_write_index": true
+    PUT /metricbeat-000000
+    {
+      "aliases": {
+        "metricbeat":{
+          "is_write_index": true
+        }
+      }
     }
-  }
-}
-````
+    ````
 
 1. Start Metricbeat with `sudo service metricbeat start`.
 1. Check that we are generating some metrics on *Index Management* in *Management*. Make sure there is an index called `metricbeat-000000` that has some documents.
 1. While we wait for some data to be generated, let's set up something else in Kibana's *Console*:
 
-```sh
-PUT _template/rollup
-{
-  "order": 10,
-  "index_patterns": ["*_rollup"],
-  "settings": {
-  	"index": {
-  	  "number_of_shards" : 1,
-      "number_of_replicas" : 0,
-      "routing.allocation.include.size": "warm"
-    }
-  }
-}
-
-
-PUT _rollup/job/metricbeat
-{
-  "index_pattern" : "metricbeat-*",
-  "rollup_index" : "metricbeat_rollup",
-  "cron" : "0 * * * * ?",
-  "groups" : {
-    "date_histogram" : {
-      "interval" : "5m",
-      "field" : "@timestamp",
-      "delay" : "1m",
-      "time_zone" : "UTC"
-    }
-  },
-  "metrics" : [
+    ```sh
+    PUT _template/rollup
     {
-      "field" : "system.memory.free",
-      "metrics" : [
-        "avg",
-        "sum",
-        "max"
-      ]
+      "order": 10,
+      "index_patterns": ["*_rollup"],
+      "settings": {
+      	"index": {
+      	  "number_of_shards" : 1,
+          "number_of_replicas" : 0,
+          "routing.allocation.include.size": "warm"
+        }
+      }
     }
-  ],
-  "timeout" : "20s",
-  "page_size" : 1000
-}
 
 
-POST _rollup/job/metricbeat/_start
-```
+    PUT _rollup/job/metricbeat
+    {
+      "index_pattern" : "metricbeat-*",
+      "rollup_index" : "metricbeat_rollup",
+      "cron" : "0 * * * * ?",
+      "groups" : {
+        "date_histogram" : {
+          "interval" : "5m",
+          "field" : "@timestamp",
+          "delay" : "1m",
+          "time_zone" : "UTC"
+        }
+      },
+      "metrics" : [
+        {
+          "field" : "system.memory.free",
+          "metrics" : [
+            "avg",
+            "sum",
+            "max"
+          ]
+        }
+      ],
+      "timeout" : "20s",
+      "page_size" : 1000
+    }
+
+
+    POST _rollup/job/metricbeat/_start
+    ```
 
 1. Dive into the UI and our configuration for both *Index Lifecycle Policies* and *Rollup Jobs* in *Management*.
 1. Watch the transformation of indices in *Index Management*.
 1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashbaord. Enable `Search in frozen indices` under *Advanced Settings* in *Management*. Refresh the dashboard and see the extended timeframe of available data.
-1. Create a new *Rollup index pattern* (on the blue *Create index pattern* button) in *Index Patterns* on *Management*. Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize*, *Create new visualization*, and then pick *Lens*. Select `Last 1 hour` again and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timestamp but also the required disk space on *Index Management*.
+1. Create a new *Rollup index pattern* (on the blue *Create index pattern* button) in *Index Patterns* on *Management*. Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize*, *Create new visualization*, and then pick *Lens*. Select `Last 1 hour` again and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timeframe, but also the required disk space on *Index Management*.
 
 
 ## Terraform Setup
