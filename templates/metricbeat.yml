@@ -1,0 +1,59 @@
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu
+    - load
+    - core
+    - diskio
+    - filesystem
+    - fsstat
+    - memory
+    - network
+    - process
+    - process_summary
+    - socket
+  enabled: true
+  period: 10s
+  processes: ['.*']
+  cgroups: true
+  process.include_top_n:
+    enabled: true
+    by_cpu: 20
+    by_memory: 20
+- module: elasticsearch
+  metricsets:
+    - node
+    - node_stats
+    - index
+    - index_recovery
+    - index_summary
+    - shard
+    - ml_job
+  period: 10s
+  hosts: ["http://localhost:9200", "http://localhost:9201", "http://localhost:9202"]
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"
+
+
+processors:
+- add_cloud_metadata: ~
+- add_host_metadata: ~
+
+
+output.elasticsearch:
+  hosts: ["{{ elasticsearch_host }}"]
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"
+
+setup:
+  kibana:
+    host: "{{ kibana_host }}"
+    username: "{{ elasticsearch_user }}"
+    password: "{{ elasticsearch_password }}"
+  template.enabled: true
+  dashboards.enabled: true
+  ilm:
+    enabled: true
+    rollover_alias: "metricbeat"
+    pattern: "metricbeat-000000"
+    policy_name: "metricbeat"

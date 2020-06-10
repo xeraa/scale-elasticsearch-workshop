@@ -1,0 +1,27 @@
+heartbeat.monitors:
+- type: http
+  name: Elasticsearch
+  urls: ["{{ elasticsearch_host }}"]
+  username: "{{ elasticsearch_user }}"
+  password: "${ES_PWD}"
+  schedule: "@every 10s"
+  timeout: 3s
+  check.response.status: 200
+
+
+processors:
+- add_cloud_metadata: ~
+- add_host_metadata: ~
+- add_observer_metadata:
+    geo:
+      name: eu-central-1
+      location: 50.1105, 8.6822
+      continent_name: Europe
+      country_iso_code: DE
+      city_name: Frankfurt
+
+
+output.elasticsearch:
+  hosts: ["{{ elasticsearch_host }}"]
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"

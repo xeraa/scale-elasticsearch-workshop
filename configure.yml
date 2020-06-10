@@ -1,0 +1,171 @@
+- hosts: all
+  remote_user: ubuntu
+  become: true
+  gather_facts: yes
+
+
+  vars:
+      # Elastic Stack setup
+      elastic_download: https://artifacts.elastic.co
+      elasticsearch_host: http://localhost:9200/
+      elasticsearch_user: admin
+      elasticsearch_password: secret
+      kibana_host: http://localhost:5601
+      stack_version: 7.7.1
+
+
+  pre_tasks:
+    - name: Install Python2 to make Ansible work
+      raw: sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y install python-minimal
+
+  tasks:
+
+
+    # System
+    - name: Update and upgrade apt packages
+      apt: upgrade=dist force_apt_get=yes
+
+    - name: Install auditd, which this example is about
+      apt: name=auditd force_apt_get=yes
+
+    - name: Install NTP to avoid time drift and PIP to manage Python dependencies plus its build tools
+      apt:
+        name: [ 'ntp', 'ntpdate', 'python3-pip', 'build-essential', 'libssl-dev', 'libffi-dev', 'whois' ]
+        force_apt_get: yes
+
+
+    # Elasticsearch
+    - name: Get Elasticsearch
+      unarchive:
+        src: "{{ elastic_download }}/downloads/elasticsearch/elasticsearch-{{ stack_version }}-linux-x86_64.tar.gz"
+        dest: /opt/
+        remote_src: yes
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Copy Elasticsearch three times #Use command because Ansible's handling of this is terrible
+      command: "cp -rp /opt/elasticsearch-{{ stack_version }}/ /opt/elasticsearch-{{ item }}/"
+      loop:
+        - hot
+        - warm
+        - cold
+
+    - name: Change the Elasticsearch configuration
+      template: "src=templates/elasticsearch.yml dest=/opt/elasticsearch-{{ item.size }}/config/elasticsearch.yml"
+      loop:
+        - { size: "hot", port: 9200 }
+        - { size: "warm", port: 9201 }
+        - { size: "cold", port: 9202 }
+
+    - name: Remove a user for Elasticsearch (just in case we want to make any changes)
+      command: /opt/elasticsearch-{{ item }}/bin/elasticsearch-users userdel {{ elasticsearch_user }}
+      ignore_errors: true
+      loop:
+        - hot
+        - warm
+        - cold
+    - name: Create a user for Elasticsearch
+      command: /opt/elasticsearch-{{ item }}/bin/elasticsearch-users useradd {{ elasticsearch_user }} -p {{ elasticsearch_password }} -r superuser
+      loop:
+        - hot
+        - warm
+        - cold
+
+    - name: Change Elasticsearch's Xms
+      lineinfile:
+        dest: /opt/elasticsearch-{{ item }}/config/jvm.options
+        regexp: "^-Xms1g"
+        line: "-Xms512m"
+      loop:
+        - hot
+        - warm
+        - cold
+    - name: Change Elasticsearch's Xmx
+      lineinfile:
+        dest: /opt/elasticsearch-{{ item }}/config/jvm.options
+        regexp: "^-Xmx1g"
+        line: "-Xmx512m"
+      loop:
+        - hot
+        - warm
+        - cold
+
+
+    # Kibana
+    - name: Install Kibana
+      apt:
+        deb: "{{ elastic_download }}/downloads/kibana/kibana-{{ stack_version }}-amd64.deb"
+    - name: Stop Kibana
+      service: name=kibana state=stopped enabled=yes
+    - name: Make Kibana available on all network interfaces
+      lineinfile:
+        dest: /etc/kibana/kibana.yml
+        regexp: "^server.host"
+        line: 'server.host: "0.0.0.0"'
+    - name: Add an encryption key for Kibana
+      lineinfile:
+        dest: /etc/kibana/kibana.yml
+        regexp: "xpack.encryptedSavedObjects.encryptionKey"
+        line: "xpack.encryptedSavedObjects.encryptionKey: \"{{ lookup('password', '/dev/null length=33') }}\""
+    - name: Create the Kibana logging directory
+      file:
+        path: /var/log/kibana/
+        state: directory
+        owner: kibana
+        group: kibana
+    - name: Enable persistent Kibana logs
+      lineinfile:
+        dest: /etc/kibana/kibana.yml
+        regexp: "^logging.dest"
+        line: "logging.dest: /var/log/kibana/kibana.log"
+    - name: Set the username for the Elasticsearch user
+      lineinfile:
+        dest: /etc/kibana/kibana.yml
+        regexp: "^elasticsearch.username"
+        line: "elasticsearch.username: {{ elasticsearch_user }}"
+        state: present
+    - name: Set the password for the Elasticsearch user
+      lineinfile:
+        dest: /etc/kibana/kibana.yml
+        regexp: "^elasticsearch.password"
+        line: "elasticsearch.password: {{ elasticsearch_password }}"
+        state: present
+
+
+    # Beats
+    - name: Get the Beats
+      apt:
+        deb: "{{ elastic_download }}/downloads/beats/{{ item }}/{{ item }}-{{ stack_version }}-amd64.deb"
+        force_apt_get: yes
+      loop:
+        - auditbeat
+        - filebeat
+        - heartbeat
+        - metricbeat
+        - packetbeat
+
+    - name: Change the Beats configuration
+      template: "src=templates/{{ item }}.yml dest=/etc/{{ item }}/{{ item }}.yml"
+      loop:
+        - auditbeat
+        - filebeat
+        - heartbeat
+        - metricbeat
+        - packetbeat
+
+    - name: Stop but make sure the Beats autostart
+      service: name={{ item }} state=stopped enabled=yes
+      loop:
+        - auditbeat
+        - filebeat
+        - heartbeat-elastic
+        - metricbeat
+        - packetbeat
+
+
+    # Get the Elasticsearch injector
+    - name: Get the injector
+      get_url:
+        url: "https://download.elastic.co/workshops/basic-kibana/injector/injector-7.0.jar"
+        dest: /opt/
+        mode: "755"

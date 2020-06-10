@@ -1,0 +1,20 @@
+filebeat.modules:
+- module: auditd
+- module: nginx
+- module: system
+
+
+processors:
+- add_cloud_metadata: ~
+- add_host_metadata: ~
+
+
+output.elasticsearch:
+  hosts: ["{{ elasticsearch_host }}"]
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"
+
+setup.kibana:
+  host: "{{ kibana_host }}"
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"

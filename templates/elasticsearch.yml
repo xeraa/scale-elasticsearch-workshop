@@ -1,0 +1,17 @@
+cluster.name: scale-elasticsearch
+
+node.name: es-{{ item.size }}
+
+http.port: {{ item.port }}
+
+node.attr.size: {{ item.size }}
+
+#discovery.seed_hosts: [] #Relying on local auto-clustering
+
+cluster.initial_master_nodes: ["127.0.0.1:9300", "127.0.0.1:9301", "127.0.0.1:9302"]
+
+xpack.security.enabled: true
+
+bootstrap.memory_lock: true
+
+xpack.monitoring.collection.enabled: true

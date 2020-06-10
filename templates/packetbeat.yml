@@ -1,0 +1,33 @@
+packetbeat.interfaces.device: any
+
+
+packetbeat.flows:
+  timeout: 30s
+  period: 10s
+
+
+packetbeat.protocols:
+- type: icmp
+  enabled: true
+- type: dns
+  ports: [53]
+- type: http
+  ports: [80]
+- type: tls
+  ports: [443]
+
+
+processors:
+- add_cloud_metadata: ~
+- add_host_metadata: ~
+
+
+output.elasticsearch:
+  hosts: ["{{ elasticsearch_host }}"]
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"
+
+setup.kibana:
+  host: "{{ kibana_host }}"
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"

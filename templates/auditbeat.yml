@@ -1,0 +1,30 @@
+auditbeat.modules:
+- module: system
+  datasets:
+    - host
+    - user
+    - package
+    - login
+  period: 1m
+  user.detect_password_changes: true
+- module: system
+  datasets:
+    - process
+    - socket
+  period: 2s
+
+
+processors:
+- add_cloud_metadata: ~
+- add_host_metadata: ~
+
+
+output.elasticsearch:
+  hosts: ["{{ elasticsearch_host }}"]
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"
+
+setup.kibana:
+  host: "{{ kibana_host }}"
+  username: "{{ elasticsearch_user }}"
+  password: "{{ elasticsearch_password }}"
