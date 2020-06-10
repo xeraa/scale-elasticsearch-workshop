@@ -8,8 +8,8 @@ Hands-on workshop on how to scale Elasticsearch.
 
 We are running through this together and dive into the relevant parts. For the lab, head to *My Lab* in Strigo:
 
-1. Look at the configuration files in */opt/elasticsearch-xxx/config/elasticsearch.yml*.
-1. Start all three Elasticsearch nodes with `/opt/elasticsearch-xxx/bin/elasticsearch -d`.
+1. Look at the configuration files in */opt/elasticsearch-{hot,warm,cold}/config/elasticsearch.yml*.
+1. Start all three Elasticsearch nodes with `/opt/elasticsearch-{hot,warm,cold}/bin/elasticsearch -d`.
 1. Check that the hot node has successfully started with `curl -u admin:secret http://localhost:9200/`.
 1. Check the cluster state with `curl -u admin:secret localhost:9200/_cat/nodes?v`. It has to show the same three `name` attributes — otherwise please ping us for help:
 
