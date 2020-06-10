@@ -1,6 +1,6 @@
 # Scale Elasticsearch Workshop
 
-Hands-on workshop on how to scale Elasticsearch.
+Hands-on workshop on how to scale Elasticsearch. The repository also includes the [slides](https://github.com/xeraa/scale-elasticsearch-workshop/blob/master/slides.pdf).
 
 
 
@@ -25,7 +25,7 @@ We are running through this together and dive into the relevant parts. For the l
 
     ![](img/machine-info.png)
 
-1. Access Kibana on port 5601 of your DNS name. The credentials are *admin* and *secret*.
+1. Access Kibana on port 5601 of your DNS name — it will look like `http://ec2-XXX-XXX-XXX-XXX.eu-central-1.compute.amazonaws.com:5601` (HTTP and not HTTPS). The credentials are *admin* and *secret*.
 1. Run the following requests in Kibana's *Dev Tools* → *Console*:
 
     ```js
