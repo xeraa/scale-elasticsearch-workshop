@@ -25,7 +25,7 @@ We are running through this together and dive into the relevant parts. For the l
 
     ![](img/machine-info.png)
 
-1. Access Kibana on port 5601 of your DNS name — it will look like `http://ec2-XXX-XXX-XXX-XXX.eu-central-1.compute.amazonaws.com:5601` (HTTP and not HTTPS). The credentials are *admin* and *secret*.
+1. Access Kibana on port 5601 of your DNS name — it will look like `http://XXX.labs.strigo.io:5601` (HTTP and not HTTPS). The credentials are *admin* and *secret*.
 1. Run the following requests in Kibana's *Dev Tools* → *Console*:
 
     ```js
@@ -126,7 +126,7 @@ We are running through this together and dive into the relevant parts. For the l
     ````
 
 1. Start Metricbeat with `sudo service metricbeat start`.
-1. Check that we are generating some metrics in *Management* → *Index Management*. Make sure there is an index called `metricbeat-000000` that has some documents.
+1. Check that we are generating some metrics in *Stack Management* → *Index Management*. Make sure there is an index called `metricbeat-000000` that has some documents.
 1. Frozen index demo:
 
     ```js
@@ -226,14 +226,14 @@ We are running through this together and dive into the relevant parts. For the l
     POST _rollup/job/metricbeat/_start
     ```
 
-1. Dive into the UI and our configuration for both *Management* → *Index Lifecycle Policies* and *Rollup Jobs*.
+1. Dive into the UI and our configuration for both *Stack Management* → *Index Lifecycle Policies* and *Rollup Jobs*.
 1. Watch the transformation of indices in *Index Management*.
-1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashboard. Enable `Search in frozen indices` in Kibana's *Management* → *Advanced Settings*. Refresh the dashboard and see the extended timeframe of available data.
-1. Create a new index pattern in *Management* → *Index Patterns* → *Rollup index pattern* (on the blue *Create index pattern* button). Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize* → *Create new visualization* and then pick *Lens*. Select `Last 1 hour` again and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timeframe, but also the required disk space on *Index Management*.
+1. Look at the `Last 1 hour` of the *[Metricbeat System] Host overview ECS* dashboard. Enable `Search in frozen indices` in Kibana's *Stack Management* → *Advanced Settings*. Refresh the dashboard and see the extended timeframe of available data.
+1. Create a new index pattern in *Stack Management* → *Index Patterns* → *Rollup index pattern* (on the blue *Create index pattern* button). Name the pattern `metricbeat*` (no dash or underscore) and pick `@timestamp` as the timestamp field. Head to *Visualize* → *Create new visualization* and then pick *Lens*. Select `Last 1 hour` on the new `metricbeat*` index pattern and visualize `system.memory.free` for the `metricbeat*` index pattern. Switch to the `metricbeat-*` index pattern and change the intervals to `1 minutes` on the `@timestamp` field. See the difference in granularity and available timeframe, but also the required disk space on *Index Management*.
 
     ![](img/interval.png)
 
-1. What is the default behavior of Beats in terms of node assignment and ILM? Start Filebeat with `sudo service filebeat start`. If you don't want to wait for it to generate enough data, help with `java -jar /opt/injector-7.0.jar --nb 1000000 --es.user admin --es.pass secret --es.index filebeat-7.7.1-2020.06.10-000001` (or whatever the current Filebeat index is). Also what about rollups?
+1. What is the default behavior of Beats in terms of node assignment and ILM? Start Filebeat with `sudo service filebeat start`. If you don't want to wait for it to generate enough data, help with `java -jar /opt/injector-7.0.jar --nb 1000000 --es.user admin --es.pass secret --es.index filebeat-7.10.0-2020.12.07-000001` (or whatever the current Filebeat index is). Also what about rollups?
 
 
 ## Terraform Setup
